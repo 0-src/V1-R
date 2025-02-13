@@ -5,18 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:V1_R"
         mc:Ignorable="d"
-        Title="MainWindow"
-        Height="800" Width="1200"
-        Background="#1E1E1E">
+        Title="V1 Performance Dashboard" Height="600" Width="1200"
+        Background="#1E1E1E"
+        WindowStyle="None" ResizeMode="NoResize">
     <Grid Margin="10">
         <!-- Row Definitions -->
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
             <!-- Header -->
             <RowDefinition Height="200"/>
-            <!-- Filters -->
+            <!-- Filters Panel -->
             <RowDefinition Height="*"/>
-            <!-- Data Grid -->
+            <!-- Account Info & Execution Log Block -->
             <RowDefinition Height="250"/>
             <!-- Chart -->
             <RowDefinition Height="40"/>
@@ -24,49 +24,76 @@
         </Grid.RowDefinitions>
 
         <!-- HEADER -->
-        <Border Grid.Row="0" Background="#FF4500" Padding="10">
-            <TextBlock Text="V1 Performance Dashboard" Foreground="White" FontSize="16" FontWeight="Bold"/>
+        <Border Grid.Row="0" Background="#FF4500" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="V1 Performance Dashboard" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="16" FontWeight="Bold"/>
+                <Button Grid.Column="1" Content="X" Width="30" Height="30"
+                        VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"
+                        Background="Transparent" Foreground="White" BorderBrush="Transparent"
+                        FontWeight="Bold" Click="CloseButton_Click"/>
+            </Grid>
         </Border>
 
+
         <!-- FILTERS PANEL -->
-        <StackPanel Grid.Row="1" Orientation="Vertical" Background="#333" Margin="10">
+        <StackPanel Grid.Row="1" Orientation="Vertical" Background="#333" Margin="0,10,0,10">
             <Grid Background="#222" Margin="10" Height="120">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
-
+                <!-- Accounts Section dynamically populated -->
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Accounts" Foreground="White"/>
-                    <CheckBox Content="APEX329670000001" Foreground="White"/>
+                    <TextBlock Text="Accounts" Foreground="White" FontWeight="Bold"/>
+                    <ItemsControl x:Name="AccountsItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding AccountName}" 
+                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          Checked="AccountCheckBox_Checked"
+                                          Unchecked="AccountCheckBox_Unchecked"
+                                          Foreground="White"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
-
-                <StackPanel Grid.Column="1">
-                    <TextBlock Text="PLACEHOLDER" Foreground="White"/>
-                </StackPanel>
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="PLACEHOLDER" Foreground="White"/>
+                <!-- Tradovate Status Box -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="Tradovate Status:" Foreground="White" FontWeight="Bold" TextAlignment="Center"/>
+                    <TextBlock x:Name="TradovateStatusText" Text="Not Connected to Tradovate" 
+                               Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </StackPanel>
 
-        <!-- DATA GRID -->
-        <DataGrid Grid.Row="2" Background="Black" Foreground="Black" HeadersVisibility="Column" 
-                  AutoGenerateColumns="False" BorderBrush="#666" BorderThickness="1">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Period" Width="100" Foreground="White"/>
-                <DataGridTextColumn Header="Net Profit" Width="100" Foreground="White"/>
-                <DataGridTextColumn Header="Gross Profit" Width="100" Foreground="White"/>
-                <DataGridTextColumn Header="Gross Loss" Width="100" Foreground="White"/>
-                <DataGridTextColumn Header="Commission" Width="100" Foreground="White"/>
-            </DataGrid.Columns>
-        </DataGrid>
-
-        <!-- CHART SECTION -->
-        <Border Grid.Row="3" Background="Black" Padding="10">
-            <TextBlock Text="Graph: Cumulative Net Profit" Foreground="White"/>
-            <!-- Placeholder for Chart (To be implemented using OxyPlot or LiveCharts) -->
-        </Border>
+        <!-- ACCOUNT INFORMATION & EXECUTION LOG BLOCK -->
+        <StackPanel Grid.Row="2" Background="Black" Margin="0,2,0,10" Grid.RowSpan="3">
+            <!-- Account Status & Balance -->
+            <TextBlock x:Name="AccountStatusText" 
+                       Text="Not Connected" 
+                       Foreground="White" 
+                       FontSize="14" 
+                       FontWeight="Bold" 
+                       Margin="5,5,0,5"/>
+            <TextBlock x:Name="AccountBalanceText" 
+                       Text="Not Connected to an Account" 
+                       Foreground="White" 
+                       FontSize="12" 
+                       Margin="10,0,0,10"/>
+            <!-- Execution Log -->
+            <TextBlock Text="Log for Executions:" 
+                       Foreground="White" 
+                       FontWeight="Bold" 
+                       Margin="5,10,0,5"/>
+            <ListBox x:Name="ExecutionLogListBox" 
+                     Background="#222" 
+                     Foreground="White" 
+                     Height="150"
+                     Margin="10,0,10,0"/>
+        </StackPanel>
     </Grid>
 </Window>

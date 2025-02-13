@@ -9,4 +9,14 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Docs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="NinjaTrader.Client">
+      <HintPath>..\..\..\..\..\Program Files\NinjaTrader 8\bin\NinjaTrader.Client.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
