@@ -2,12 +2,15 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using NinjaTrader.Client;
+
 
 namespace V1_R
 {
@@ -45,9 +48,8 @@ namespace V1_R
             AccountsItemsControl.ItemsSource = Accounts;
 
             // Add accounts dynamically.
-            Accounts.Add(new Account { AccountName = "Sim101" });
-            Accounts.Add(new Account { AccountName = "APEX2926700000001" });
-            Accounts.Add(new Account { AccountName = "MFFUEVST214695004" });
+
+            LoadAccounts();
 
             // Instantiate and set up the client wrapper.
             clientWrapper = new ClientWrapper(ExecutionLogListBox);
@@ -92,6 +94,41 @@ namespace V1_R
                 UpdateAccountInfo();
             }
         }
+
+        // Load accounts directly in MainWindow
+        private void LoadAccounts()
+        {
+            try
+            {
+                var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var configPath = Path.Combine(documentsPath, "config.json");
+
+                if (!File.Exists(configPath))
+                    throw new FileNotFoundException("Config file not found in Documents folder.");
+
+                var configContent = File.ReadAllText(configPath);
+                var config = JsonSerializer.Deserialize<Config>(configContent);
+
+                if (config?.Accounts?.Any() == true)
+                {
+                    Accounts.Clear();
+                    foreach (var account in config.Accounts)
+                    {
+                        Accounts.Add(account);
+                        Console.WriteLine($"Loaded account: {account.AccountName}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No accounts defined in config file.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to load accounts: {ex.Message}");
+            }
+        }
+
 
         // Aggregates the selected accounts and updates the UI.
         private void UpdateAccountInfo()

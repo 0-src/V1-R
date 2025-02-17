@@ -15,20 +15,6 @@ using System.Windows.Controls;
 
 namespace V1_R
 {
-    public class TradeInstruction
-    {
-        public string Ticker { get; set; }
-        public string Action { get; set; }
-        public string Sentiment { get; set; }
-
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-        public int Quantity { get; set; }
-
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-        public double Price { get; set; }
-
-        public DateTime Time { get; set; }
-    }
 
     public class ClientWrapper : IDisposable
     {
@@ -347,5 +333,22 @@ namespace V1_R
     {
         public string AuthToken { get; set; }
         public string NgrokUrl { get; set; }
+
+        public List<Account> Accounts { get; set; }
+
+    }
+    public class TradeInstruction
+    {
+        public string Ticker { get; set; }
+        public string Action { get; set; }
+        public string Sentiment { get; set; }
+
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        public int Quantity { get; set; }
+
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        public double Price { get; set; }
+
+        public DateTime Time { get; set; }
     }
 }
