@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using NinjaTrader.Client;
@@ -27,9 +30,13 @@ namespace V1_R
         // DispatcherTimer to update the live price every 1 second.
         private DispatcherTimer priceUpdateTimer;
 
+        string Instrument = "NQ 03-25";
+
+
         public MainWindow()
         {
             InitializeComponent();
+
 
             // Initialize the collection.
             Accounts = new ObservableCollection<Account>();
@@ -43,8 +50,13 @@ namespace V1_R
             Accounts.Add(new Account { AccountName = "MFFUEVST214695004" });
 
             // Instantiate and set up the client wrapper.
-            clientWrapper = new ClientWrapper();
+            clientWrapper = new ClientWrapper(ExecutionLogListBox);
             clientWrapper.SetUp("127.0.0.1", 36973);
+            
+            clientWrapper.UnSubscribeData(Instrument);
+            Task.Delay(100);
+            clientWrapper.SubscribeData(Instrument);
+            MarketStatusBlock.Text = $"Connected to {Instrument}";
 
             // Set up a DispatcherTimer to update the live price every 1 second.
             priceUpdateTimer = new DispatcherTimer();
@@ -56,7 +68,8 @@ namespace V1_R
         // Update the live price every second.
         private void PriceUpdateTimer_Tick(object sender, EventArgs e)
         {
-            double livePrice = clientWrapper.GetLivePriceNQMar25();
+            double livePrice = clientWrapper.GetLivePrice("NQ 03-25");
+            MarketStatus.Text = $"{Instrument} : {livePrice:##,###0.00}";
             UpdateAccountInfo();
         }
 
@@ -109,7 +122,10 @@ namespace V1_R
         // Closes the application.
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
+            clientWrapper.UnSubscribeData(Instrument);
+            Task.Delay(100);
             priceUpdateTimer.Stop();
+            clientWrapper?.StopNgrok();
             clientWrapper?.Dispose();
             Application.Current.Shutdown();
         }
