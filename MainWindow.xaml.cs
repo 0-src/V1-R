@@ -81,6 +81,7 @@ namespace V1_R
             if ((sender as FrameworkElement)?.DataContext is Account account)
             {
                 account.IsSelected = true;
+                UpdateSelectedAccountsInClient();
                 UpdateAccountInfo();
             }
         }
@@ -91,8 +92,18 @@ namespace V1_R
             if ((sender as FrameworkElement)?.DataContext is Account account)
             {
                 account.IsSelected = false;
+                UpdateSelectedAccountsInClient();
                 UpdateAccountInfo();
             }
+        }
+
+        private void UpdateSelectedAccountsInClient()
+        {
+            var selectedAccountNames = Accounts.Where(a => a.IsSelected)
+                                               .Select(a => a.AccountName)
+                                               .ToList();
+
+            clientWrapper.UpdateSelectedAccounts(selectedAccountNames);
         }
 
         // Load accounts directly in MainWindow

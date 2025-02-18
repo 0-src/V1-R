@@ -12,6 +12,7 @@ using System.ServiceProcess;
 using System.Diagnostics;
 using System.Windows.Threading;
 using System.Windows.Controls;
+using Microsoft.Extensions.Options;
 
 namespace V1_R
 {
@@ -24,12 +25,15 @@ namespace V1_R
         private string ngrokUrl;
         private ListBox executionLogListBox;
 
+        private List<string> selectedAccounts = new List<string>();
+        private readonly object lockObj = new();
+
+
         public ClientWrapper(ListBox logListBox)
         {
             ntClient = new NinjaTrader.Client.Client();
             executionLogListBox = logListBox;
             LoadConfig();
-            StartNgrokHidden();
             StartWebhookServer();
         }
 
@@ -58,7 +62,27 @@ namespace V1_R
                 authToken = config?.AuthToken ?? throw new Exception("Auth token missing in config file.");
                 ngrokUrl = config?.NgrokUrl ?? throw new Exception("Ngrok URL missing in config file.");
                 LogExecution("Config loaded successfully from Documents folder.");
-                LogExecution($"Using ngrok URL: {ngrokUrl}");
+                // LogExecution($"Using ngrok URL: {ngrokUrl}");
+
+                try
+                {
+                    var process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "ngrok.exe",
+                            Arguments = $"http --url={ngrokUrl} 80",
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        }
+                    };
+                    process.Start();
+                    LogExecution("ngrok tunnel started silently in the background.");
+                }
+                catch (Exception ex)
+                {
+                    LogExecution($"Failed to start ngrok tunnel: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
@@ -67,28 +91,6 @@ namespace V1_R
             }
         }
 
-        private void StartNgrokHidden()
-        {
-            try
-            {
-                var process = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = "ngrok.exe",
-                        Arguments = "http --url=composed-honeybee-intimate.ngrok.app 80",
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
-                };
-                process.Start();
-                LogExecution("ngrok tunnel started silently in the background.");
-            }
-            catch (Exception ex)
-            {
-                LogExecution($"Failed to start ngrok tunnel: {ex.Message}");
-            }
-        }
 
         private void StartWebhookServer()
         {
@@ -144,7 +146,7 @@ namespace V1_R
             });
 
             LogExecution($"Webhook server running on port {Port}");
-            LogExecution($"Accessible via ngrok URL: {ngrokUrl}/api/TradingView?auth={authToken}");
+            //LogExecution($"Accessible via ngrok URL: {ngrokUrl}/api/TradingView?auth={authToken}");
         }
 
         public void SetUp(string host, int port)
@@ -219,11 +221,31 @@ namespace V1_R
             }
         }
 
-        public int ProcessTradeInstruction(string json, string account = "Sim101")
+        public void UpdateSelectedAccounts(List<string> accounts)
+        {
+            lock (lockObj)
+            {
+                selectedAccounts = new List<string>(accounts);
+                Console.WriteLine($"Updated selected accounts: {string.Join(", ", selectedAccounts)}");
+            }
+        }
+
+        public int ProcessTradeInstruction(string json)
         {
             try
             {
-                var instruction = JsonSerializer.Deserialize<TradeInstruction>(json);
+                Debug.WriteLine(json);
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    NumberHandling = JsonNumberHandling.AllowReadingFromString
+                };
+
+                var cleanedJson = json.Trim('\u200B', '\uFEFF').Trim();
+                var instruction = JsonSerializer.Deserialize<TradeInstruction>(cleanedJson, options);
+                Debug.WriteLine($"Action: {instruction?.Action}, Ticker: {instruction?.Ticker}");
+
 
                 if (instruction == null)
                     throw new ArgumentException("Invalid JSON payload.");
@@ -235,24 +257,72 @@ namespace V1_R
                     throw new ArgumentException("Invalid trade instruction parameters.");
                 }
 
-                int result = ExecuteCommand(
-                    "PLACE",
-                    account,
-                    instruction.Ticker,
-                    instruction.Action.ToUpper(),
-                    instruction.Quantity,
-                    "MARKET",
-                    instruction.Price,
-                    0,
-                    "DAY",
-                    string.Empty,
-                    string.Empty,
-                    string.Empty,
-                    string.Empty
-                );
 
-                LogExecution($"{instruction.Action.ToUpper()} Executed @{account} - {instruction.Time}");
-                return result;
+                lock (lockObj)
+                {
+                    int finalResult = 0;
+                    foreach (var account in selectedAccounts)
+                    {
+                        int result;
+
+                        // Determine command based on sentiment
+                        if (instruction.Sentiment?.ToLower() == "flat")
+                        {
+                            // Flatten everything for the account
+                            result = ntClient.Command(
+                                "FLATTENEVERYTHING",
+                                account,
+                                instruction.Ticker,
+                                instruction.Action.ToUpper(),
+                                instruction.Quantity,
+                                "MARKET",
+                                instruction.Price,
+                                0,
+                                "DAY",
+                                string.Empty,
+                                string.Empty,
+                                string.Empty,
+                                string.Empty
+                            );
+
+                            Console.WriteLine($"Flattened all positions for account {account} with result: {result}");
+                            LogExecution($"{instruction.Sentiment.ToUpper()} Executed @ {account}");
+                        }
+                        else if (instruction.Sentiment?.ToLower() == "long" || instruction.Sentiment?.ToLower() == "short")
+                        {
+                            // Regular place market order
+                            result = ntClient.Command(
+                                "PLACE",
+                                account,
+                                instruction.Ticker,
+                                instruction.Action.ToUpper(),
+                                instruction.Quantity,
+                                "MARKET",
+                                instruction.Price,
+                                0,
+                                "DAY",
+                                string.Empty,
+                                string.Empty,
+                                string.Empty,
+                                string.Empty
+                            );
+
+                            Console.WriteLine($"Executed {instruction.Action} order for account {account} with result: {result}");
+                            LogExecution($"{instruction.Sentiment.ToUpper()} Executed @ {account}");
+                        }
+                        else
+                        {
+                            LogExecution($"Unknown sentiment: {instruction.Sentiment}. No action taken.");
+                            result = -1; // Indicate a failure or no-op.
+                        }
+
+                        finalResult = result; // Track the last result
+                    }
+
+                    return finalResult;
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -348,7 +418,5 @@ namespace V1_R
 
         [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public double Price { get; set; }
-
-        public DateTime Time { get; set; }
     }
 }
