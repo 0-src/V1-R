@@ -1,18 +1,10 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using NinjaTrader.Client;
-using System.ServiceProcess;
-using System.Diagnostics;
-using System.Windows.Threading;
 using System.Windows.Controls;
-using Microsoft.Extensions.Options;
 
 namespace V1_R
 {
@@ -25,7 +17,7 @@ namespace V1_R
         private string ngrokUrl;
         private ListBox executionLogListBox;
 
-        private List<string> selectedAccounts = new List<string>();
+        private Dictionary<string, string> selectedAccounts = new();
         private readonly object lockObj = new();
 
 
@@ -221,14 +213,20 @@ namespace V1_R
             }
         }
 
-        public void UpdateSelectedAccounts(List<string> accounts)
+        public void UpdateSelectedAccounts(List<Account> selectedAccountsList)
         {
             lock (lockObj)
             {
-                selectedAccounts = new List<string>(accounts);
-                Console.WriteLine($"Updated selected accounts: {string.Join(", ", selectedAccounts)}");
+                selectedAccounts.Clear();
+                foreach (var account in selectedAccountsList)
+                {
+                    // Add account name and strategy to dictionary
+                    selectedAccounts[account.AccountName] = account.Strategy;
+                }
+                Console.WriteLine($"Updated selected accounts: {string.Join(", ", selectedAccounts.Keys)}");
             }
         }
+
 
         public int ProcessTradeInstruction(string json)
         {
@@ -257,18 +255,24 @@ namespace V1_R
                     throw new ArgumentException("Invalid trade instruction parameters.");
                 }
 
-
                 lock (lockObj)
                 {
                     int finalResult = 0;
-                    foreach (var account in selectedAccounts)
+
+                    foreach (var (account, strategy) in selectedAccounts)
                     {
                         int result;
+
+                        // Check if the account's strategy matches the webhook's strategy
+                        if (!string.Equals(strategy, instruction.Strategy, StringComparison.OrdinalIgnoreCase))
+                        {
+                            LogExecution($"Skipped account {account} - strategy '{strategy}' does not match webhook strategy '{instruction.Strategy}'");
+                            continue;
+                        }
 
                         // Determine command based on sentiment
                         if (instruction.Sentiment?.ToLower() == "flat")
                         {
-                            // Flatten everything for the account
                             result = ntClient.Command(
                                 "FLATTENEVERYTHING",
                                 account,
@@ -285,12 +289,10 @@ namespace V1_R
                                 string.Empty
                             );
 
-                            Console.WriteLine($"Flattened all positions for account {account} with result: {result}");
-                            LogExecution($"{instruction.Sentiment.ToUpper()} Executed @ {account}");
+                            LogExecution($"{instruction.Sentiment.ToUpper()} executed for account {account} with strategy '{strategy}'");
                         }
                         else if (instruction.Sentiment?.ToLower() == "long" || instruction.Sentiment?.ToLower() == "short")
                         {
-                            // Regular place market order
                             result = ntClient.Command(
                                 "PLACE",
                                 account,
@@ -307,22 +309,18 @@ namespace V1_R
                                 string.Empty
                             );
 
-                            Console.WriteLine($"Executed {instruction.Action} order for account {account} with result: {result}");
-                            LogExecution($"{instruction.Sentiment.ToUpper()} Executed @ {account}");
+                            LogExecution($"Executed {instruction.Sentiment.ToUpper()} for account {account} with strategy '{strategy}'");
                         }
                         else
                         {
-                            LogExecution($"Unknown sentiment: {instruction.Sentiment}. No action taken.");
-                            result = -1; // Indicate a failure or no-op.
+                            LogExecution($"Unknown sentiment '{instruction.Sentiment}' - skipping");
+                            result = -1;
                         }
 
-                        finalResult = result; // Track the last result
+                        finalResult = result;
                     }
-
                     return finalResult;
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -338,7 +336,8 @@ namespace V1_R
             {
                 ntClient.SubscribeMarketData(instrument);
             }
-            catch {
+            catch
+            {
                 LogExecution($"Couldn't subscribe to {instrument}");
             }
         }
@@ -359,7 +358,7 @@ namespace V1_R
         {
             try
             {
-                var price = ntClient.MarketData(instrument,0);                
+                var price = ntClient.MarketData(instrument, 0);
                 return price;
             }
             catch (Exception ex)
@@ -418,5 +417,8 @@ namespace V1_R
 
         [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public double Price { get; set; }
+
+        public string Strategy { get; set; }
+
     }
 }

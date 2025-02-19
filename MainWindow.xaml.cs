@@ -18,6 +18,7 @@ namespace V1_R
     public class Account
     {
         public string AccountName { get; set; }
+        public string Strategy { get; set; }
         public bool IsSelected { get; set; }
     }
 
@@ -99,11 +100,8 @@ namespace V1_R
 
         private void UpdateSelectedAccountsInClient()
         {
-            var selectedAccountNames = Accounts.Where(a => a.IsSelected)
-                                               .Select(a => a.AccountName)
-                                               .ToList();
-
-            clientWrapper.UpdateSelectedAccounts(selectedAccountNames);
+            var selectedAccounts = Accounts.Where(a => a.IsSelected).ToList();
+            clientWrapper.UpdateSelectedAccounts(selectedAccounts);
         }
 
         // Load accounts directly in MainWindow
