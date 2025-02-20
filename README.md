@@ -13,7 +13,7 @@ V1-R is a trading automation project integrating **NinjaTrader Client DLL** with
 ## Installation
 1. Clone this repository:
    ```sh
-   git clone https://github.com/your-repo/V1-R.git
+   [git clone https://github.com/your-repo/V1-R.git](https://github.com/0-src/V1-R.git)
    ```
 2. Open `V1-R.sln` in Visual Studio.
 3. Restore dependencies:
