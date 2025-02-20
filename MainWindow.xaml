@@ -12,7 +12,7 @@
         <!-- Row Definitions -->
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
-            <!-- Header -->
+            <!-- Header (Custom Title Bar) -->
             <RowDefinition Height="200"/>
             <!-- Filters Panel -->
             <RowDefinition Height="*"/>
@@ -23,7 +23,7 @@
             <!-- Tabs -->
         </Grid.RowDefinitions>
 
-        <!-- HEADER -->
+        <!-- CUSTOM TITLE BAR -->
         <Border Grid.Row="0" Background="#FF4500" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -38,16 +38,16 @@
             </Grid>
         </Border>
 
-
         <!-- FILTERS PANEL -->
         <StackPanel Grid.Row="1" Orientation="Vertical" Background="#333" Margin="0,10,0,10">
             <Grid Background="#222" Margin="10" Height="120">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <!-- Accounts Section dynamically populated -->
-                <StackPanel Grid.Column="0">
+                <StackPanel Grid.Column="0" Margin="10,5">
                     <TextBlock Text="Accounts" Foreground="White" FontWeight="Bold"/>
                     <ItemsControl x:Name="AccountsItemsControl">
                         <ItemsControl.ItemTemplate>
@@ -56,13 +56,20 @@
                                           IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                           Checked="AccountCheckBox_Checked"
                                           Unchecked="AccountCheckBox_Unchecked"
-                                          Foreground="White"/>
+                                          Foreground="White"
+                                          Margin="5,1"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
-                <!-- Tradovate Status Box -->
+                <!-- Market Status Box -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="MarketStatusBlock" Text="Market Status:" Foreground="White" FontWeight="Bold" TextAlignment="Center"/>
+                    <TextBlock x:Name="MarketStatus" Text="Not Connected to Instrument" 
+                               Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
+                </StackPanel>
+                <!-- Tradovate Status Box (Placeholder) -->
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock Text="Tradovate Status:" Foreground="White" FontWeight="Bold" TextAlignment="Center"/>
                     <TextBlock x:Name="TradovateStatusText" Text="Not Connected to Tradovate" 
                                Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
@@ -72,7 +79,7 @@
 
         <!-- ACCOUNT INFORMATION & EXECUTION LOG BLOCK -->
         <StackPanel Grid.Row="2" Background="Black" Margin="0,2,0,10" Grid.RowSpan="3">
-            <!-- Account Status & Balance -->
+            <!-- Aggregated Account Status & Balance -->
             <TextBlock x:Name="AccountStatusText" 
                        Text="Not Connected" 
                        Foreground="White" 
@@ -84,6 +91,7 @@
                        Foreground="White" 
                        FontSize="12" 
                        Margin="10,0,0,10"/>
+            <!-- Live Price -->
             <!-- Execution Log -->
             <TextBlock Text="Log for Executions:" 
                        Foreground="White" 
