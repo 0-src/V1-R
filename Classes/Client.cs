@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+﻿using System.IO;
 using System.Diagnostics;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows.Controls;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+using V1_R;
+using V1_R.Classes;
 
 namespace V1_R
 {
@@ -223,7 +226,7 @@ namespace V1_R
                     // Add account name and strategy to dictionary
                     selectedAccounts[account.AccountName] = account.Strategy;
                 }
-                Console.WriteLine($"Updated selected accounts: {string.Join(", ", selectedAccounts.Keys)}");
+                Debug.WriteLine($"Updated selected accounts: {string.Join(", ", selectedAccounts.Keys)}");
             }
         }
 
@@ -274,12 +277,12 @@ namespace V1_R
                         if (instruction.Sentiment?.ToLower() == "flat")
                         {
                             result = ntClient.Command(
-                                "FLATTENEVERYTHING",
+                                "CLOSEPOSITION",
                                 account,
                                 instruction.Ticker,
                                 instruction.Action.ToUpper(),
                                 instruction.Quantity,
-                                "MARKET",
+                                "STOPMARKET",
                                 instruction.Price,
                                 0,
                                 "DAY",
@@ -288,6 +291,17 @@ namespace V1_R
                                 string.Empty,
                                 string.Empty
                             );
+
+                            Util.LogTrade(new TradeLog
+                            {
+                                AccountName = account,
+                                Ticker = instruction.Ticker,
+                                Action = instruction.Action,
+                                Sentiment = instruction.Sentiment,
+                                Quantity = instruction.Quantity,
+                                Price = instruction.Price,
+                                Strategy = instruction.Strategy
+                            });
 
                             LogExecution($"{instruction.Sentiment.ToUpper()} executed for account {account} with strategy '{strategy}'");
                         }
@@ -310,6 +324,16 @@ namespace V1_R
                             );
 
                             LogExecution($"Executed {instruction.Sentiment.ToUpper()} for account {account} with strategy '{strategy}'");
+                            Util.LogTrade(new TradeLog
+                            {
+                                AccountName = account,
+                                Ticker = instruction.Ticker,
+                                Action = instruction.Action,
+                                Sentiment = instruction.Sentiment,
+                                Quantity = instruction.Quantity,
+                                Price = instruction.Price,
+                                Strategy = instruction.Strategy
+                            });
                         }
                         else
                         {
