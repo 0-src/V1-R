@@ -3,105 +3,187 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         xmlns:local="clr-namespace:V1_R"
         mc:Ignorable="d"
         Title="V1 Performance Dashboard" Height="600" Width="1200"
         Background="#1E1E1E"
         WindowStyle="None" ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Custom TabControl Style -->
+        <Style x:Key="CustomTabControl" TargetType="TabControl">
+            <Setter Property="Background" Value="#222"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+
+        <!-- Custom TabItem Style (No ContentPresenter) -->
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#333"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5,5,0,0"
+                                BorderThickness="1" BorderBrush="#444">
+                            <Grid>
+                                <TextBlock Text="{TemplateBinding Header}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <!-- Active Tab -->
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#FF4500"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="10">
-        <!-- Row Definitions -->
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
-            <!-- Header (Custom Title Bar) -->
-            <RowDefinition Height="200"/>
-            <!-- Filters Panel -->
             <RowDefinition Height="*"/>
-            <!-- Account Info & Execution Log Block -->
-            <RowDefinition Height="250"/>
-            <!-- Chart -->
-            <RowDefinition Height="40"/>
-            <!-- Tabs -->
         </Grid.RowDefinitions>
 
-        <!-- CUSTOM TITLE BAR -->
         <Border Grid.Row="0" Background="#FF4500" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="V1 Performance Dashboard" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="16" FontWeight="Bold"/>
+                <TextBlock Text="V1 Trading Dashboard" Foreground="White" 
+               VerticalAlignment="Center" Margin="10,0,0,0" 
+               FontSize="16" FontWeight="Bold"/>
                 <Button Grid.Column="1" Content="X" Width="30" Height="30"
-                        VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"
-                        Background="Transparent" Foreground="White" BorderBrush="Transparent"
-                        FontWeight="Bold" Click="CloseButton_Click"/>
+            VerticalAlignment="Center" HorizontalAlignment="Right" 
+            Margin="0,0,10,0"
+            Background="Transparent" Foreground="White" BorderBrush="Transparent"
+            FontWeight="Bold" Click="CloseButton_Click"/>
             </Grid>
         </Border>
+        <TabControl Grid.Row="1" BorderThickness="0" Background="Transparent">
+            <!-- Main Dashboard Tab -->
+            <TabItem Header="Main" Grid.Row="1" Width="75" Height="25">
+                <Grid Background="#1E1E1E">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="200"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <!-- FILTERS PANEL -->
+                    <StackPanel Grid.Row="0" Orientation="Vertical" Background="#333" Margin="0,0,0,10">
+                        <Grid Background="#222" Margin="10" Height="120">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
 
-        <!-- FILTERS PANEL -->
-        <StackPanel Grid.Row="1" Orientation="Vertical" Background="#333" Margin="0,10,0,10">
-            <Grid Background="#222" Margin="10" Height="120">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
-                <!-- Accounts Section dynamically populated -->
-                <StackPanel Grid.Column="0" Margin="10,5">
-                    <TextBlock Text="Accounts" Foreground="White" FontWeight="Bold"/>
-                    <ItemsControl x:Name="AccountsItemsControl">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox Content="{Binding AccountName}" 
-                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                          Checked="AccountCheckBox_Checked"
-                                          Unchecked="AccountCheckBox_Unchecked"
-                                          Foreground="White"
-                                          Margin="5,1"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-                <!-- Market Status Box -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock x:Name="MarketStatusBlock" Text="Market Status:" Foreground="White" FontWeight="Bold" TextAlignment="Center"/>
-                    <TextBlock x:Name="MarketStatus" Text="Not Connected to Instrument" 
-                               Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
-                </StackPanel>
-                <!-- Tradovate Status Box (Placeholder) -->
-                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="Tradovate Status:" Foreground="White" FontWeight="Bold" TextAlignment="Center"/>
-                    <TextBlock x:Name="TradovateStatusText" Text="Not Connected to Tradovate" 
-                               Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
-                </StackPanel>
-            </Grid>
-        </StackPanel>
+                            <!-- Accounts Section dynamically populated -->
+                            <StackPanel Grid.Column="0" Margin="10,5">
+                                <TextBlock Text="Accounts" Foreground="White" FontWeight="Bold"/>
+                                <ItemsControl x:Name="AccountsItemsControl">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Content="{Binding AccountName}" 
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  Checked="AccountCheckBox_Checked"
+                                                  Unchecked="AccountCheckBox_Unchecked"
+                                                  Foreground="White"
+                                                  Margin="5,1"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
 
-        <!-- ACCOUNT INFORMATION & EXECUTION LOG BLOCK -->
-        <StackPanel Grid.Row="2" Background="Black" Margin="0,2,0,10" Grid.RowSpan="3">
-            <!-- Aggregated Account Status & Balance -->
-            <TextBlock x:Name="AccountStatusText" 
-                       Text="Not Connected" 
-                       Foreground="White" 
-                       FontSize="14" 
-                       FontWeight="Bold" 
-                       Margin="5,5,0,5"/>
-            <TextBlock x:Name="AccountBalanceText" 
-                       Text="Not Connected to an Account" 
-                       Foreground="White" 
-                       FontSize="12" 
-                       Margin="10,0,0,10"/>
-            <!-- Live Price -->
-            <!-- Execution Log -->
-            <TextBlock Text="Log for Executions:" 
-                       Foreground="White" 
-                       FontWeight="Bold" 
-                       Margin="5,10,0,5"/>
-            <ListBox x:Name="ExecutionLogListBox" 
-                     Background="#222" 
-                     Foreground="White" 
-                     Height="150"
-                     Margin="10,0,10,0"/>
-        </StackPanel>
+                            <!-- Market Status Box -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock x:Name="MarketStatusBlock" Text="Market Status:" Foreground="White" FontWeight="Bold" TextAlignment="Center"/>
+                                <TextBlock x:Name="MarketStatus" Text="Not Connected to Instrument" 
+                                       Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Tradovate Status Box (Placeholder) -->
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="Tradovate Status:" Foreground="White" FontWeight="Bold" TextAlignment="Center"/>
+                                <TextBlock x:Name="TradovateStatusText" Text="Not Connected to Tradovate" 
+                                       Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- ACCOUNT INFORMATION & EXECUTION LOG -->
+                    <StackPanel Grid.Row="2" Background="Black" Margin="0,2,0,10">
+                        <TextBlock x:Name="AccountStatusText" 
+                               Text="Not Connected" 
+                               Foreground="White" 
+                               FontSize="14" 
+                               FontWeight="Bold" 
+                               Margin="5,5,0,5"/>
+                        <TextBlock x:Name="AccountBalanceText" 
+                               Text="Not Connected to an Account" 
+                               Foreground="White" 
+                               FontSize="12" 
+                               Margin="10,0,0,10"/>
+                        <TextBlock Text="Log for Executions:" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Margin="5,10,0,5"/>
+                        <ListBox x:Name="ExecutionLogListBox" 
+                             Background="#222" 
+                             Foreground="White" 
+                             Height="150"
+                             Margin="10,0,10,0"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- Analysis Tab -->
+            <TabItem Header="Analysis" Width="75" Height="25">
+                <Grid Background="#1E1E1E" Margin="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2.5*"/>
+                        <!-- Chart (Larger) -->
+                        <ColumnDefinition Width="1*"/>
+                        <!-- Filters & Controls (Smaller) -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- PnL Chart (Left Side) -->
+                    <lvc:CartesianChart x:Name="PnLChart" 
+                            Grid.Column="0"
+                            Background="#222"
+                            Foreground="White"
+                            Margin="10"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"/>
+
+                    <!-- Controls & Filters (Right Side) -->
+                    <StackPanel Grid.Column="1" Margin="10" VerticalAlignment="Top">
+                        <TextBlock Text="Trade Analysis" Foreground="White" FontSize="18" FontWeight="Bold" Margin="10"/>
+
+                        <!-- Account Filter -->
+                        <StackPanel Orientation="Horizontal" Margin="10">
+                            <TextBlock Text="Account:" Foreground="White" Margin="0,0,10,0"/>
+                            <ComboBox x:Name="AccountFilter" Width="150" Background="White" Foreground="Black" SelectionChanged="FilterChanged"/>
+                        </StackPanel>
+
+                        <!-- Strategy Filter -->
+                        <StackPanel Orientation="Horizontal" Margin="10">
+                            <TextBlock Text="Strategy:" Foreground="White" Margin="0,0,10,0"/>
+                            <ComboBox x:Name="StrategyFilter" Width="150" Background="White" Foreground="Black" SelectionChanged="FilterChanged"/>
+                        </StackPanel>
+
+                        <Button Content="Load PnL Chart" Click="LoadPnL_Click"
+                    Background="#FF4500" Foreground="White" 
+                    Width="200" Height="40" Margin="10"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
