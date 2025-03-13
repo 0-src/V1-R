@@ -1,8 +1,7 @@
 ﻿# V1-R Project
 
 ## Overview
-V1-R is a trading automation project integrating **NinjaTrader Client DLL** with **TradingView** for automated position entries/exits, webhook handling, and execution logic. This project allows traders to automate their strategies and streamline trading operations.
-
+V1-R is a trading automation project integrating **NinjaTrader Client DLL** with **TradingView** for automated position entries/exits, webhook handling, and execution logic.
 ## Features
 - Automated trade execution using NinjaTrader Client DLL
 - Webhook handling from TradingView
