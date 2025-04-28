@@ -8,7 +8,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
+    <ApplicationIcon>icons8-turtle-96.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="icons8-turtle-96.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="icons8-turtle-96.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Docs\" />
@@ -29,6 +38,10 @@
     <PackageReference Include="SkiaSharp" Version="3.118.0-preview.2.3" />
     <PackageReference Include="SkiaSharp.Views" Version="3.118.0-preview.2.3" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="icons8-turtle-96.ico" />
   </ItemGroup>
 
 </Project>
