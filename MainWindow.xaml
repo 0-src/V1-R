@@ -108,11 +108,10 @@
                                        Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
                             </StackPanel>
 
-                            <!-- Tradovate Status Box (Placeholder) -->
+                            <!-- Instrument Editing/Saving -->
                             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Text="Tradovate Status:" Foreground="White" FontWeight="Bold" TextAlignment="Center"/>
-                                <TextBlock x:Name="TradovateStatusText" Text="Not Connected to Tradovate" 
-                                       Foreground="White" Margin="0,5,0,0" TextAlignment="Center"/>
+                                <TextBox x:Name="InstrumentTextBox" Width="150" Margin="5"/>
+                                <Button x:Name="SaveInstrumentButton" Content="Save Instrument" Width="120" Height="30" Margin="5" BorderThickness="0" Foreground="White" Background="#333"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -143,45 +142,31 @@
                 </Grid>
             </TabItem>
 
-            <!-- Analysis Tab -->
-            <TabItem Header="Analysis" Width="75" Height="25">
-                <Grid Background="#1E1E1E" Margin="20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2.5*"/>
-                        <!-- Chart (Larger) -->
-                        <ColumnDefinition Width="1*"/>
-                        <!-- Filters & Controls (Smaller) -->
-                    </Grid.ColumnDefinitions>
+            <!-- Accounts Tab -->
+            <!-- Accounts Tab -->
+            <TabItem Header="Accounts" Width="100" Height="25">
+                <Grid Background="#FF1E1E1E" Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                    <!-- PnL Chart (Left Side) -->
-                    <lvc:CartesianChart x:Name="PnLChart" 
-                            Grid.Column="0"
-                            Background="#222"
-                            Foreground="White"
-                            Margin="10"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch"/>
-
-                    <!-- Controls & Filters (Right Side) -->
-                    <StackPanel Grid.Column="1" Margin="10" VerticalAlignment="Top">
-                        <TextBlock Text="Trade Analysis" Foreground="White" FontSize="18" FontWeight="Bold" Margin="10"/>
-
-                        <!-- Account Filter -->
-                        <StackPanel Orientation="Horizontal" Margin="10">
-                            <TextBlock Text="Account:" Foreground="White" Margin="0,0,10,0"/>
-                            <ComboBox x:Name="AccountFilter" Width="150" Background="White" Foreground="Black" SelectionChanged="FilterChanged"/>
-                        </StackPanel>
-
-                        <!-- Strategy Filter -->
-                        <StackPanel Orientation="Horizontal" Margin="10">
-                            <TextBlock Text="Strategy:" Foreground="White" Margin="0,0,10,0"/>
-                            <ComboBox x:Name="StrategyFilter" Width="150" Background="White" Foreground="Black" SelectionChanged="FilterChanged"/>
-                        </StackPanel>
-
-                        <Button Content="Load PnL Chart" Click="LoadPnL_Click"
-                    Background="#FF4500" Foreground="White" 
-                    Width="200" Height="40" Margin="10"/>
+                    <!-- Input Fields -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10" Grid.Row="0" HorizontalAlignment="Left">
+                        <TextBox x:Name="AccountNameTextBox" Width="150" Margin="5,5,5,5"/>
+                        <TextBox x:Name="StrategyTextBox" Width="150" Margin="5,5,5,5"/>
                     </StackPanel>
+
+                    <!-- Buttons -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10" Grid.Row="1" HorizontalAlignment="Left">
+                        <Button x:Name="AddAccountButton" Content="Add Account" Width="100" Height="30" Margin="5"/>
+                        <Button x:Name="EditAccountButton" Content="Edit Selected" Width="120" Height="30" Margin="5"/>
+                        <Button x:Name="DeleteAccountButton" Content="Delete Selected" Width="120" Height="30" Margin="5"/>
+                    </StackPanel>
+
+                    <!-- Accounts List -->
+                    <ListBox x:Name="AccountsListBox" Grid.Row="2" Background="#FF2E2E2E" Foreground="White"/>
                 </Grid>
             </TabItem>
         </TabControl>

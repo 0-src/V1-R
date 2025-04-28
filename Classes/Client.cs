@@ -29,6 +29,7 @@ namespace V1_R
             ntClient = new NinjaTrader.Client.Client();
             executionLogListBox = logListBox;
             LoadConfig();
+            StopNgrok();
             StartWebhookServer();
         }
 
@@ -47,7 +48,7 @@ namespace V1_R
             try
             {
                 var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var configPath = Path.Combine(documentsPath, "config.json");
+                var configPath = Path.Combine(documentsPath, "V1", "config.json");
 
                 if (!File.Exists(configPath))
                     throw new FileNotFoundException("Config file not found in Documents folder.");
@@ -99,7 +100,6 @@ namespace V1_R
                     app.MapGet("/", async (HttpContext context) =>
                     {
                         await context.Response.WriteAsync("Webhook server is running!");
-                        LogExecution("Health check request received.");
                     });
 
                     app.MapPost("/api/TradingView", async (HttpContext context) =>
@@ -427,6 +427,7 @@ namespace V1_R
         public string AuthToken { get; set; }
         public string NgrokUrl { get; set; }
 
+        public string Instrument { get; set; }
         public List<Account> Accounts { get; set; }
 
     }
