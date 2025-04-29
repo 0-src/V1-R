@@ -225,6 +225,7 @@ namespace V1_R
                 selectedAccounts.Clear();
                 foreach (var account in selectedAccountsList)
                 {
+                    LogExecution($"New Account: {account.AccountName}");
                     // Add account name and strategy to dictionary
                     selectedAccounts[account.AccountName] = account.Strategy;
                 }
