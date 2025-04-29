@@ -29,7 +29,6 @@ namespace V1_R
             ntClient = new NinjaTrader.Client.Client();
             executionLogListBox = logListBox;
             LoadConfig();
-            StopNgrok();
             StartWebhookServer();
         }
 
@@ -73,6 +72,9 @@ namespace V1_R
                         }
                     };
                     process.Start();
+
+                    process.OutputDataReceived += (s, e) => LogExecution($"[NGROK] {e.Data}");
+                    process.ErrorDataReceived += (s, e) => LogExecution($"[NGROK-ERR] {e.Data}");
                     LogExecution("ngrok tunnel started silently in the background.");
                 }
                 catch (Exception ex)
@@ -412,7 +414,7 @@ namespace V1_R
                 foreach (var process in Process.GetProcessesByName("ngrok"))
                 {
                     process.Kill();
-                    LogExecution("ngrok process terminated.");
+                    LogExecution("Ngrok process terminated.");
                 }
             }
             catch (Exception ex)
