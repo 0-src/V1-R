@@ -72,7 +72,6 @@ namespace V1_R
             SaveInstrumentButton.Click += SaveInstrumentButton_Click;
 
 
-            RefreshAccountsListBox(); // Load into ListBox after loading accounts
 
             string liveInstrument = GetInstrumentFromConfig();
 
@@ -89,6 +88,9 @@ namespace V1_R
             priceUpdateTimer.Interval = TimeSpan.FromMilliseconds(500);
             priceUpdateTimer.Tick += PriceUpdateTimer_Tick;
             priceUpdateTimer.Start();
+         
+            RefreshAccountsListBox(); // Load into ListBox after loading accounts
+            UpdateAccountInfo();
         }
 
         private void LoadInstrument()
@@ -165,10 +167,12 @@ namespace V1_R
         // Event handler when an account CheckBox is checked.
         private void AccountCheckBox_Checked(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine("Ran");
             if ((sender as FrameworkElement)?.DataContext is Account account)
             {
                 account.IsSelected = true;
                 UpdateSelectedAccountsInClient();
+                UpdateAccountInfo();
             }
         }
 
@@ -179,6 +183,7 @@ namespace V1_R
             {
                 account.IsSelected = false;
                 UpdateSelectedAccountsInClient();
+                UpdateAccountInfo();
             }
         }
 
@@ -186,6 +191,7 @@ namespace V1_R
         {
             var selectedAccounts = Accounts.Where(a => a.IsSelected).ToList();
             clientWrapper.UpdateSelectedAccounts(selectedAccounts);
+            Debug.WriteLine(selectedAccounts);
         }
 
         // Load accounts directly in MainWindow from config.json.
@@ -220,6 +226,24 @@ namespace V1_R
             }
         }
 
+        private void UpdateAccountInfo()
+        {
+            var selectedAccounts = Accounts.Where(a => a.IsSelected).ToList();
+            if (selectedAccounts.Any())
+            {
+                string names = string.Join(", ", selectedAccounts.Select(a => a.AccountName));
+                AccountStatusText.Text = "Connected: " + names;
+
+                var balances = selectedAccounts.Select(a => $"{clientWrapper.GetCashValue(a.AccountName):C}");
+                AccountBalanceText.Text = "Account Balance: " + string.Join(", ", balances);
+            }
+            else
+            {
+                AccountStatusText.Text = "Not Connected";
+                AccountBalanceText.Text = "Not Connected to an Account";
+            }
+        }
+
         private void RefreshAccountsListBox()
         {
             AccountsListBox.Items.Clear();
@@ -227,6 +251,8 @@ namespace V1_R
             {
                 AccountsListBox.Items.Add($"{account.AccountName} — {account.Strategy}");
             }
+
+            UpdateAccountInfo();
         }
 
         private void SaveAccounts()
