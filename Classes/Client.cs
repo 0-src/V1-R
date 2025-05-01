@@ -56,6 +56,7 @@ namespace V1_R
                 var config = JsonSerializer.Deserialize<Config>(configContent);
                 authToken = config?.AuthToken ?? throw new Exception("Auth token missing in config file.");
                 ngrokUrl = config?.NgrokUrl ?? throw new Exception("Ngrok URL missing in config file.");
+
                 LogExecution("Config loaded successfully from Documents folder.");
                 // LogExecution($"Using ngrok URL: {ngrokUrl}");
 
@@ -225,7 +226,6 @@ namespace V1_R
                 selectedAccounts.Clear();
                 foreach (var account in selectedAccountsList)
                 {
-                    LogExecution($"New Account: {account.AccountName}");
                     // Add account name and strategy to dictionary
                     selectedAccounts[account.AccountName] = account.Strategy;
                 }

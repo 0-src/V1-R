@@ -1,5 +1,7 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Windows;
 
 namespace V1_R
@@ -10,5 +12,4 @@ namespace V1_R
     public partial class App : Application
     {
     }
-
 }
