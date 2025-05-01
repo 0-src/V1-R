@@ -21,6 +21,7 @@ using V1_R.Classes;
 using System.Drawing;
 using System.Windows.Media;
 using LiveChartsCore.SkiaSharpView.Painting;
+using System.ComponentModel;
 
 namespace V1_R
 {
@@ -71,8 +72,6 @@ namespace V1_R
             DeleteAccountButton.Click += DeleteAccountButton_Click;
             SaveInstrumentButton.Click += SaveInstrumentButton_Click;
 
-
-
             string liveInstrument = GetInstrumentFromConfig();
 
             // Instantiate and set up the client wrapper.
@@ -88,6 +87,8 @@ namespace V1_R
             priceUpdateTimer.Interval = TimeSpan.FromMilliseconds(500);
             priceUpdateTimer.Tick += PriceUpdateTimer_Tick;
             priceUpdateTimer.Start();
+
+            this.Closing += MWClosing;
          
             RefreshAccountsListBox(); // Load into ListBox after loading accounts
             UpdateAccountInfo();
@@ -338,7 +339,7 @@ namespace V1_R
 
 
         // Closes the application.
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        public void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             clientWrapper.UnSubscribeData(CurrentInstrument);
             Task.Delay(100);
@@ -346,6 +347,15 @@ namespace V1_R
             clientWrapper?.StopNgrok();
             clientWrapper?.Dispose();
             Application.Current.Shutdown();
+        }
+
+        private void MWClosing(object sender, CancelEventArgs e)
+        {
+            clientWrapper.UnSubscribeData(CurrentInstrument);
+            Task.Delay(100);
+            priceUpdateTimer.Stop();
+            clientWrapper?.StopNgrok();
+            clientWrapper?.Dispose();
         }
     }
 }
